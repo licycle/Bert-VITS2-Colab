@@ -21,7 +21,7 @@ def split_audio_by_srt(audio_file, srt_file, output_dir, index):
         duration = calculate_duration(start_time, end_time)
 
         # 只处理时长大于2秒的片段
-        if duration > 2:
+        if duration >= 2:
             start_time = convert_time_format(start_time)
             end_time = convert_time_format(end_time)
 
