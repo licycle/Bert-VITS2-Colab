@@ -3,13 +3,16 @@ import os
 import argparse
 import torch
 
-def transcribe_one(audio_path, model, lang2token, speaker):
+def transcribe_one(audio_path, model, lang2token, speaker, whisper_size="large"):
     # load audio and pad/trim it to fit 30 seconds
     audio = whisper.load_audio(audio_path)
     audio = whisper.pad_or_trim(audio)
 
     # make log-Mel spectrogram and move to the same device as the model
-    mel = whisper.log_mel_spectrogram(audio).to(model.device)
+    if whisper_size == "large":
+        mel = whisper.log_mel_spectrogram(audio, n_mels=128).to(model.device)
+    else:
+        mel = whisper.log_mel_spectrogram(audio).to(model.device)
 
     # detect the spoken language
     _, probs = model.detect_language(mel)
@@ -46,7 +49,7 @@ if __name__ == "__main__":
 
     for i, wavfile in enumerate(list(os.walk(input_dir))[0][2]):
         try:
-            lang, text = transcribe_one(os.path.join(input_dir, wavfile), model, lang2token, speaker)
+            lang, text = transcribe_one(os.path.join(input_dir, wavfile), model, lang2token, speaker, args.whisper_size)
             if lang not in list(lang2token.keys()):
                 print(f"{lang} not supported, ignoring")
                 continue
